@@ -124,11 +124,18 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
 
     def notify(self, args):
         try:
+            # Get the file location
+            global fileLocation
+            folderDlg = ui.createFolderDialog()
+            folderDlg.title = 'Select a folder to save the points'
+            dlgResult = folderDlg.showDialog()
+            if dlgResult == adsk.core.DialogResults.DialogOK:
+                fileLocation = folderDlg.folder
+            else:
+                return
 
             # Extract points on the surface of the selected face
             points = extract_points_on_surface(selectedFace)
-            inputText = ui.inputBox(
-                "Location and Name", "Location and Name of CSV files", ".csv")
 
         except:
             ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
@@ -219,23 +226,24 @@ def pointsOnFace(centroid, vertices=None, radius=None):
     if sketch:
         # Get sketch points
         if radius == None:
+
+            # draw points from vertex to vertex
+            name = "edge"
             for i, vertex in enumerate(vertices):
                 pointsOnLine(sketch, vertices[i-1], vertices[i])
-            points = [str(point.geometry.asArray())
-                      for point in sketch.sketchPoints]
-            points = "\n".join(points[1:])
 
-            with open("C:/Users\pkoprov/AppData/Roaming/Autodesk/Autodesk Fusion 360/API/Scripts/Extract points/edge_points.csv", "w") as f:
-                f.write("{}:\n{}".format(faceToken, points))
+            if not preview:
+                writeToFile(name, sketch)
 
+            # draw points from centroid to vertex
+            name = "centroid"
             for vertex in vertices:
                 pointsOnLine(sketch, centroid, vertex)
-            points = [str(point.geometry.asArray())
-                      for point in sketch.sketchPoints]
-            points = "\n".join(points[1:])
 
-            with open("C:/Users\pkoprov/AppData/Roaming/Autodesk/Autodesk Fusion 360/API/Scripts/Extract points/centroid_points.csv", "w") as f:
-                f.write("{}:\n{}".format(faceToken, points))
+            if not preview:
+                writeToFile(name, sketch)
+                ui.messageBox("files saved to: {} ".format(fileLocation))
+
         else:
             drawPoint(sketch, centroid)
 
@@ -263,6 +271,14 @@ def drawPoint(sketch, xyz):
     sketchPoints = sketch.sketchPoints
     point = adsk.core.Point3D.create(xyz[0], xyz[1], xyz[2])
     sketchPoint = sketchPoints.add(point)
+
+
+def writeToFile(name, sketch):
+    points = [str(point.geometry.asArray())
+              for point in sketch.sketchPoints]
+    points = "\n".join(points[1:])
+    with open(fileLocation + f"/{name}.csv", "w") as f:
+        f.write("{}:\n{}".format(faceToken, points))
 
 
 def run(context):
