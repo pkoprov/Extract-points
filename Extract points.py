@@ -16,26 +16,18 @@ def extract_points_on_surface(selection):
         if selection.objectType == adsk.fusion.BRepFace.classType():
             if selection.geometry.objectType == adsk.core.Plane.classType():
                 # Get the parameter ranges of the surface
+                centroid = selection.centroid.asArray()
                 edges = selection.edges
-                origin = edges[0].startVertex.geometry.asArray()
-                U = edges[0].endVertex.geometry.asArray()
-                V = edges[1].startVertex.geometry.asArray()
+                vertices = [edge.startVertex.geometry.asArray()
+                            for edge in edges]
 
-                drawPoints(origin, U)
+                pointsOnFace(centroid, vertices)
                 return
-                
-
-                for i in range(nPointsU+1):
-                    point = [j[0]+i*j[1] for j in zip(origin, dxyzU)]
-                    drawPoints(point)
-                    # start = [i*coor for coor in origin]
-                    # for j in range(nPointsV+1):
-                    #     drawPoints(point)
-
 
             elif selection.geometry.objectType == adsk.core.Cylinder.classType():
-                ui.messageBox("Cylinder")
-                ui.messageBox(str(selection.geometry.origin.asArray()))
+                centroid = selection.centroid.asArray()
+                ui.messageBox(str(centroid))
+
             elif selection.geometry.objectType == adsk.core.Sphere.classType():
                 ui.messageBox("Sphere")
             elif selection.geometry.objectType == adsk.core.Cone.classType():
