@@ -10,60 +10,6 @@ import traceback
 handlers = []
 selectedFace = []
 
-# Create a function to extract points on the surface of an object
-
-
-def extract_points_on_surface(selection):
-    try:
-
-        # Check if the entity is a BRepFace
-        if selection.objectType == adsk.fusion.BRepFace.classType():
-            # action for Plane face
-            if selection.geometry.objectType == adsk.core.Plane.classType():
-                # Get the parameter ranges of the surface
-                loops = selection.loops
-                for loop in loops:
-                    if loop.isOuter:
-                        centroid = selection.centroid
-                        edges = loop.edges
-                        vertices = [
-                            edge.startVertex.geometry for edge in edges]
-
-                        global faceToken
-                        faceToken = selection.entityToken
-
-                        pointsOnFace(centroid, vertices)
-                        return
-
-                        # action for Cylinder face
-            elif selection.geometry.objectType == adsk.core.Cylinder.classType():
-                (ret, origin, axis, radius) = selection.geometry.getData()
-                ui.messageBox("return value: {};\norigin: {};\naxis: {};\nradius: {}".format(
-                    ret, origin.asArray(), axis.asPoint().asArray(), radius))
-                pointsOnFace(origin.asArray(), radius=radius)
-                pointsOnFace(axis.asPoint().asArray(), radius=radius)
-                return
-
-            # elif selection.geometry.objectType == adsk.core.Sphere.classType():
-            #     ui.messageBox("Sphere")
-            # elif selection.geometry.objectType == adsk.core.Cone.classType():
-            #     ui.messageBox("Cone")
-            # elif selection.geometry.objectType == adsk.core.Torus.classType():
-            #     ui.messageBox("Torus")
-            # elif selection.geometry.objectType == adsk.core.NurbsSurface.classType():
-            #     ui.messageBox("NurbsSurface")
-            # elif selection.geometry.objectType == adsk.core.EllipticalCone.classType():
-            #     ui.messageBox("EllipticalCone")
-            # elif selection.geometry.objectType == adsk.core.EllipticalCylinder.classType():
-            #     ui.messageBox("EllipticalCylinder")
-            else:
-                ui.messageBox("Other")
-
-        else:
-            ui.messageBox('Please select a face.')
-
-    except:
-        ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
 # Create an event handler for the "commandCreated" event
 
@@ -169,6 +115,8 @@ class MyCommandexecutePreviewHandler(adsk.core.CommandEventHandler):
             ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
 # Create an event handler for the "commandExecute" event
+
+
 class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
 
     def __init__(self):
@@ -198,6 +146,62 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
         except:
             if ui:
                 ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+
+
+# Create a function to extract points on the surface of an object
+
+
+def extract_points_on_surface(selection):
+    try:
+
+        # Check if the entity is a BRepFace
+        if selection.objectType == adsk.fusion.BRepFace.classType():
+            # action for Plane face
+            if selection.geometry.objectType == adsk.core.Plane.classType():
+                # Get the parameter ranges of the surface
+                loops = selection.loops
+                for loop in loops:
+                    if loop.isOuter:
+                        centroid = selection.centroid
+                        edges = loop.edges
+                        vertices = [
+                            edge.startVertex.geometry for edge in edges]
+
+                        global faceToken
+                        faceToken = selection.entityToken
+
+                        pointsOnFace(centroid, vertices)
+                        return
+
+                        # action for Cylinder face
+            elif selection.geometry.objectType == adsk.core.Cylinder.classType():
+                (ret, origin, axis, radius) = selection.geometry.getData()
+                ui.messageBox("return value: {};\norigin: {};\naxis: {};\nradius: {}".format(
+                    ret, origin.asArray(), axis.asPoint().asArray(), radius))
+                pointsOnFace(origin.asArray(), radius=radius)
+                pointsOnFace(axis.asPoint().asArray(), radius=radius)
+                return
+
+            # elif selection.geometry.objectType == adsk.core.Sphere.classType():
+            #     ui.messageBox("Sphere")
+            # elif selection.geometry.objectType == adsk.core.Cone.classType():
+            #     ui.messageBox("Cone")
+            # elif selection.geometry.objectType == adsk.core.Torus.classType():
+            #     ui.messageBox("Torus")
+            # elif selection.geometry.objectType == adsk.core.NurbsSurface.classType():
+            #     ui.messageBox("NurbsSurface")
+            # elif selection.geometry.objectType == adsk.core.EllipticalCone.classType():
+            #     ui.messageBox("EllipticalCone")
+            # elif selection.geometry.objectType == adsk.core.EllipticalCylinder.classType():
+            #     ui.messageBox("EllipticalCylinder")
+            else:
+                ui.messageBox("Other")
+
+        else:
+            ui.messageBox('Please select a face.')
+
+    except:
+        ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
 
 def pointsOnFace(centroid, vertices=None, radius=None):
