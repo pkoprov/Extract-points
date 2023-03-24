@@ -24,6 +24,9 @@ def extract_points_on_surface(selection):
                 vertices = [edge.startVertex.geometry.asArray()
                             for edge in edges]
 
+                global faceToken
+                faceToken = selection.entityToken
+
                 pointsOnFace(centroid, vertices)
                 return
 
@@ -174,7 +177,7 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
                 ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
 
-def pointsOnFace(centroid, vertices):
+def pointsOnFace(centroid, vertices=None, radius=None):
     app = adsk.core.Application.get()
 
     design = app.activeProduct
@@ -188,8 +191,27 @@ def pointsOnFace(centroid, vertices):
     sketch.isComputeDeferred = True
     if sketch:
         # Get sketch points
-        for vertex in vertices:
-            pointsOnLine(sketch, centroid, vertex)
+        if radius == None:
+            for i, vertex in enumerate(vertices):
+                pointsOnLine(sketch, vertices[i-1], vertices[i])
+            points = [str(point.geometry.asArray())
+                      for point in sketch.sketchPoints]
+            points = "\n".join(points[1:])
+
+            with open("C:/Users\pkoprov/AppData/Roaming/Autodesk/Autodesk Fusion 360/API/Scripts/Extract points/edge_points.csv", "w") as f:
+                f.write("{}:\n{}".format(faceToken, points))
+
+            for vertex in vertices:
+                pointsOnLine(sketch, centroid, vertex)
+            points = [str(point.geometry.asArray())
+                      for point in sketch.sketchPoints]
+            points = "\n".join(points[1:])
+
+            with open("C:/Users\pkoprov/AppData/Roaming/Autodesk/Autodesk Fusion 360/API/Scripts/Extract points/centroid_points.csv", "w") as f:
+                f.write("{}:\n{}".format(faceToken, points))
+        else:
+            drawPoint(sketch, centroid)
+
         return True
     else:
         return False
