@@ -208,19 +208,10 @@ def drawPoints(start, end):
     nPoints = int(distance/0.1)
     dxyz = [(i[1]-i[0])/nPoints for i in zip(start, end)]
 
-    sketch.isComputeDeferred = True
-    if sketch:
-        # Get sketch points
-        sketchPoints = sketch.sketchPoints
-        
-        # Create sketch point
-        for i in range(nPoints+1):
-            xyz = [coor[0]+i*coor[1] for coor in zip(start, dxyz)]
-            point = adsk.core.Point3D.create(xyz[0], xyz[1], xyz[2])
-            sketchPoint = sketchPoints.add(point)
-        return True
-    else:
-        return False
+def drawPoint(sketch, xyz):
+    sketchPoints = sketch.sketchPoints
+    point = adsk.core.Point3D.create(xyz[0], xyz[1], xyz[2])
+    sketchPoint = sketchPoints.add(point)
 
 
 def run(context):
