@@ -20,10 +20,8 @@ def extract_points_on_surface(selection):
         if selection.objectType == adsk.fusion.BRepFace.classType():
             if selection.geometry.objectType == adsk.core.Plane.classType():
                 # Get the parameter ranges of the surface
-                centroid = selection.centroid.asArray()
-                edges = selection.edges
-                vertices = [edge.startVertex.geometry.asArray()
-                            for edge in edges]
+                        vertices = [
+                            edge.startVertex.geometry for edge in edges]
 
                 global faceToken
                 faceToken = selection.entityToken
@@ -223,15 +221,15 @@ def pointsOnFace(centroid, vertices=None, radius=None):
 def pointsOnLine(sketch, start, end):
 
     # Get the distance between the two points, the number of points and distance between them
-    distance = sum(([(i[1]-i[0])**2 for i in zip(start, end)]))**0.5
+    distance = start.distanceTo(end)
     nPoints = int(distance/0.1)
     if nPoints == 0:
         return
-    dxyz = [(i[1]-i[0])/nPoints for i in zip(start, end)]
+    dxyz = [(i[1]-i[0])/nPoints for i in zip(start.asArray(), end.asArray())]
 
     # Create sketch point
     for i in range(nPoints+1):
-        xyz = [coor[0]+i*coor[1] for coor in zip(start, dxyz)]
+        xyz = [coor[0]+i*coor[1] for coor in zip(start.asArray(), dxyz)]
         drawPoint(sketch, xyz)
 
 
