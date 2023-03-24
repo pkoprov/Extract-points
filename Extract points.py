@@ -179,6 +179,8 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
 
             # Extract points on the surface of the selected face
             points = extract_points_on_surface(selectedFace)
+            inputText = ui.inputBox(
+                "Location and Name", "Location and Name of CSV files", ".csv")
 
         except:
             ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
