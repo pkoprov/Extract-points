@@ -86,7 +86,7 @@ class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
             selectInput.setSelectionLimits(1)
 
             # Connect to the command related events.
-            executePreview = MyCommandExecuteHandler()
+            executePreview = MyCommandexecutePreviewHandler()
             cmd.executePreview.add(executePreview)
             handlers.append(executePreview)
 
@@ -154,6 +154,19 @@ class MyUnSelectHandler(adsk.core.SelectionEventHandler):
             if ui:
                 ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
+
+class MyCommandexecutePreviewHandler(adsk.core.CommandEventHandler):
+    def __init__(self):
+        super().__init__()
+
+    def notify(self, args):
+        try:
+
+            # Extract points on the surface of the selected face
+            points = extract_points_on_surface(selectedFace)
+
+        except:
+            ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
 # Create an event handler for the "commandExecute" event
 class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
