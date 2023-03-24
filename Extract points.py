@@ -107,7 +107,8 @@ class MyCommandexecutePreviewHandler(adsk.core.CommandEventHandler):
 
     def notify(self, args):
         try:
-
+            global preview
+            preview = True
             # Extract points on the surface of the selected face
             points = extract_points_on_surface(selectedFace)
 
@@ -124,6 +125,9 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
 
     def notify(self, args):
         try:
+            global preview
+            preview = False
+
             # Get the file location
             global fileLocation
             folderDlg = ui.createFolderDialog()
