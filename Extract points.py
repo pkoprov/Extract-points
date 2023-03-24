@@ -204,9 +204,20 @@ def drawPoints(start, end):
     xyPlane = rootComp.xYConstructionPlane
     sketch = sketches.add(xyPlane)
 
+def pointsOnLine(sketch, start, end):
+
+    # Get the distance between the two points, the number of points and distance between them
     distance = sum(([(i[1]-i[0])**2 for i in zip(start, end)]))**0.5
     nPoints = int(distance/0.1)
+    if nPoints == 0:
+        return
     dxyz = [(i[1]-i[0])/nPoints for i in zip(start, end)]
+
+    # Create sketch point
+    for i in range(nPoints+1):
+        xyz = [coor[0]+i*coor[1] for coor in zip(start, dxyz)]
+        drawPoint(sketch, xyz)
+
 
 def drawPoint(sketch, xyz):
     sketchPoints = sketch.sketchPoints
