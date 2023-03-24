@@ -192,17 +192,26 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
                 ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
 
-def drawPoints(start, end):
-    # Get the active sketch. 
+def pointsOnFace(centroid, vertices):
     app = adsk.core.Application.get()
 
     design = app.activeProduct
     # Get the root component of the active design.
     rootComp = design.rootComponent
     # Create a new sketch on the xy plane.
-    sketches = rootComp.sketches;
+    sketches = rootComp.sketches
     xyPlane = rootComp.xYConstructionPlane
     sketch = sketches.add(xyPlane)
+
+    sketch.isComputeDeferred = True
+    if sketch:
+        # Get sketch points
+        for vertex in vertices:
+            pointsOnLine(sketch, centroid, vertex)
+        return True
+    else:
+        return False
+
 
 def pointsOnLine(sketch, start, end):
 
