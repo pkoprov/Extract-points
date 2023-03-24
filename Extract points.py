@@ -10,55 +10,6 @@ import traceback
 handlers = []
 selectedFace = []
 
-# Create a function to extract points on the surface of an object
-
-
-def extract_points_on_surface(selection):
-    try:
-
-        # Check if the entity is a BRepFace
-        if selection.objectType == adsk.fusion.BRepFace.classType():
-            if selection.geometry.objectType == adsk.core.Plane.classType():
-                # Get the parameter ranges of the surface
-                centroid = selection.centroid.asArray()
-                edges = selection.edges
-                vertices = [edge.startVertex.geometry.asArray()
-                            for edge in edges]
-
-                global faceToken
-                faceToken = selection.entityToken
-
-                pointsOnFace(centroid, vertices)
-                return
-
-            elif selection.geometry.objectType == adsk.core.Cylinder.classType():
-                (ret, origin, axis, radius) = selection.geometry.getData()
-                ui.messageBox("return value: {};\norigin: {};\naxis: {};\nradius: {}".format(
-                    ret, origin.asArray(), axis.asPoint().asArray(), radius))
-                pointsOnFace(origin.asArray(), radius=radius)
-                pointsOnFace(axis.asPoint().asArray(), radius=radius)
-                return
-
-            # elif selection.geometry.objectType == adsk.core.Sphere.classType():
-            #     ui.messageBox("Sphere")
-            # elif selection.geometry.objectType == adsk.core.Cone.classType():
-            #     ui.messageBox("Cone")
-            # elif selection.geometry.objectType == adsk.core.Torus.classType():
-            #     ui.messageBox("Torus")
-            # elif selection.geometry.objectType == adsk.core.NurbsSurface.classType():
-            #     ui.messageBox("NurbsSurface")
-            # elif selection.geometry.objectType == adsk.core.EllipticalCone.classType():
-            #     ui.messageBox("EllipticalCone")
-            # elif selection.geometry.objectType == adsk.core.EllipticalCylinder.classType():
-            #     ui.messageBox("EllipticalCylinder")
-            else:
-                ui.messageBox("Other")
-
-        else:
-            ui.messageBox('Please select a face.')
-
-    except:
-        ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
 # Create an event handler for the "commandCreated" event
 
@@ -81,7 +32,7 @@ class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
             selectInput.setSelectionLimits(1)
 
             # Connect to the command related events.
-            executePreview = MyCommandExecuteHandler()
+            executePreview = MyCommandexecutePreviewHandler()
             cmd.executePreview.add(executePreview)
             handlers.append(executePreview)
 
@@ -150,7 +101,23 @@ class MyUnSelectHandler(adsk.core.SelectionEventHandler):
                 ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
 
+class MyCommandexecutePreviewHandler(adsk.core.CommandEventHandler):
+    def __init__(self):
+        super().__init__()
+
+    def notify(self, args):
+        try:
+            global preview
+            preview = True
+            # Extract points on the surface of the selected face
+            points = extract_points_on_surface(selectedFace)
+
+        except:
+            ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+
 # Create an event handler for the "commandExecute" event
+
+
 class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
 
     def __init__(self):
@@ -158,6 +125,18 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
 
     def notify(self, args):
         try:
+            global preview
+            preview = False
+
+            # Get the file location
+            global fileLocation
+            folderDlg = ui.createFolderDialog()
+            folderDlg.title = 'Select a folder to save the points'
+            dlgResult = folderDlg.showDialog()
+            if dlgResult == adsk.core.DialogResults.DialogOK:
+                fileLocation = folderDlg.folder
+            else:
+                return
 
             # Extract points on the surface of the selected face
             points = extract_points_on_surface(selectedFace)
@@ -180,6 +159,62 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
                 ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
 
+# Create a function to extract points on the surface of an object
+
+
+def extract_points_on_surface(selection):
+    try:
+
+        # Check if the entity is a BRepFace
+        if selection.objectType == adsk.fusion.BRepFace.classType():
+            # action for Plane face
+            if selection.geometry.objectType == adsk.core.Plane.classType():
+                # Get the parameter ranges of the surface
+                loops = selection.loops
+                for loop in loops:
+                    if loop.isOuter:
+                        centroid = selection.centroid
+                        edges = loop.edges
+                        vertices = [
+                            edge.startVertex.geometry for edge in edges]
+
+                        global faceToken
+                        faceToken = selection.entityToken
+
+                        pointsOnFace(centroid, vertices)
+                        return
+
+                        # action for Cylinder face
+            elif selection.geometry.objectType == adsk.core.Cylinder.classType():
+                (ret, origin, axis, radius) = selection.geometry.getData()
+                ui.messageBox("return value: {};\norigin: {};\naxis: {};\nradius: {}".format(
+                    ret, origin.asArray(), axis.asPoint().asArray(), radius))
+                pointsOnFace(origin.asArray(), radius=radius)
+                pointsOnFace(axis.asPoint().asArray(), radius=radius)
+                return
+
+            # elif selection.geometry.objectType == adsk.core.Sphere.classType():
+            #     ui.messageBox("Sphere")
+            # elif selection.geometry.objectType == adsk.core.Cone.classType():
+            #     ui.messageBox("Cone")
+            # elif selection.geometry.objectType == adsk.core.Torus.classType():
+            #     ui.messageBox("Torus")
+            # elif selection.geometry.objectType == adsk.core.NurbsSurface.classType():
+            #     ui.messageBox("NurbsSurface")
+            # elif selection.geometry.objectType == adsk.core.EllipticalCone.classType():
+            #     ui.messageBox("EllipticalCone")
+            # elif selection.geometry.objectType == adsk.core.EllipticalCylinder.classType():
+            #     ui.messageBox("EllipticalCylinder")
+            else:
+                ui.messageBox("Other")
+
+        else:
+            ui.messageBox('Please select a face.')
+
+    except:
+        ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
+
+
 def pointsOnFace(centroid, vertices=None, radius=None):
     app = adsk.core.Application.get()
 
@@ -195,23 +230,24 @@ def pointsOnFace(centroid, vertices=None, radius=None):
     if sketch:
         # Get sketch points
         if radius == None:
+
+            # draw points from vertex to vertex
+            name = "edge"
             for i, vertex in enumerate(vertices):
                 pointsOnLine(sketch, vertices[i-1], vertices[i])
-            points = [str(point.geometry.asArray())
-                      for point in sketch.sketchPoints]
-            points = "\n".join(points[1:])
 
-            with open("C:/Users\pkoprov/AppData/Roaming/Autodesk/Autodesk Fusion 360/API/Scripts/Extract points/edge_points.csv", "w") as f:
-                f.write("{}:\n{}".format(faceToken, points))
+            if not preview:
+                writeToFile(name, sketch)
 
+            # draw points from centroid to vertex
+            name = "centroid"
             for vertex in vertices:
                 pointsOnLine(sketch, centroid, vertex)
-            points = [str(point.geometry.asArray())
-                      for point in sketch.sketchPoints]
-            points = "\n".join(points[1:])
 
-            with open("C:/Users\pkoprov/AppData/Roaming/Autodesk/Autodesk Fusion 360/API/Scripts/Extract points/centroid_points.csv", "w") as f:
-                f.write("{}:\n{}".format(faceToken, points))
+            if not preview:
+                writeToFile(name, sketch)
+                ui.messageBox("files saved to: {} ".format(fileLocation))
+
         else:
             drawPoint(sketch, centroid)
 
@@ -223,15 +259,15 @@ def pointsOnFace(centroid, vertices=None, radius=None):
 def pointsOnLine(sketch, start, end):
 
     # Get the distance between the two points, the number of points and distance between them
-    distance = sum(([(i[1]-i[0])**2 for i in zip(start, end)]))**0.5
+    distance = start.distanceTo(end)
     nPoints = int(distance/0.1)
     if nPoints == 0:
         return
-    dxyz = [(i[1]-i[0])/nPoints for i in zip(start, end)]
+    dxyz = [(i[1]-i[0])/nPoints for i in zip(start.asArray(), end.asArray())]
 
     # Create sketch point
     for i in range(nPoints+1):
-        xyz = [coor[0]+i*coor[1] for coor in zip(start, dxyz)]
+        xyz = [coor[0]+i*coor[1] for coor in zip(start.asArray(), dxyz)]
         drawPoint(sketch, xyz)
 
 
@@ -239,6 +275,14 @@ def drawPoint(sketch, xyz):
     sketchPoints = sketch.sketchPoints
     point = adsk.core.Point3D.create(xyz[0], xyz[1], xyz[2])
     sketchPoint = sketchPoints.add(point)
+
+
+def writeToFile(name, sketch):
+    points = [str(point.geometry.asArray())
+              for point in sketch.sketchPoints]
+    points = "\n".join(points[1:])
+    with open(fileLocation + f"/{name}.csv", "w") as f:
+        f.write("{}:\n{}".format(faceToken, points))
 
 
 def run(context):
