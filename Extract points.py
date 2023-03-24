@@ -21,14 +21,19 @@ def extract_points_on_surface(selection):
             # action for Plane face
             if selection.geometry.objectType == adsk.core.Plane.classType():
                 # Get the parameter ranges of the surface
+                loops = selection.loops
+                for loop in loops:
+                    if loop.isOuter:
+                        centroid = selection.centroid
+                        edges = loop.edges
                         vertices = [
                             edge.startVertex.geometry for edge in edges]
 
-                global faceToken
-                faceToken = selection.entityToken
+                        global faceToken
+                        faceToken = selection.entityToken
 
-                pointsOnFace(centroid, vertices)
-                return
+                        pointsOnFace(centroid, vertices)
+                        return
 
                         # action for Cylinder face
             elif selection.geometry.objectType == adsk.core.Cylinder.classType():
