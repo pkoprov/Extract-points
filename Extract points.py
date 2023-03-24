@@ -18,6 +18,7 @@ def extract_points_on_surface(selection):
 
         # Check if the entity is a BRepFace
         if selection.objectType == adsk.fusion.BRepFace.classType():
+            # action for Plane face
             if selection.geometry.objectType == adsk.core.Plane.classType():
                 # Get the parameter ranges of the surface
                         vertices = [
@@ -29,6 +30,7 @@ def extract_points_on_surface(selection):
                 pointsOnFace(centroid, vertices)
                 return
 
+                        # action for Cylinder face
             elif selection.geometry.objectType == adsk.core.Cylinder.classType():
                 (ret, origin, axis, radius) = selection.geometry.getData()
                 ui.messageBox("return value: {};\norigin: {};\naxis: {};\nradius: {}".format(
