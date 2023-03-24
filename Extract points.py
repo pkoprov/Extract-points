@@ -28,8 +28,12 @@ def extract_points_on_surface(selection):
                 return
 
             elif selection.geometry.objectType == adsk.core.Cylinder.classType():
-                centroid = selection.centroid.asArray()
-                ui.messageBox(str(centroid))
+                (ret, origin, axis, radius) = selection.geometry.getData()
+                ui.messageBox("return value: {};\norigin: {};\naxis: {};\nradius: {}".format(
+                    ret, origin.asArray(), axis.asPoint().asArray(), radius))
+                pointsOnFace(origin.asArray(), radius=radius)
+                pointsOnFace(axis.asPoint().asArray(), radius=radius)
+                return
 
             elif selection.geometry.objectType == adsk.core.Sphere.classType():
                 ui.messageBox("Sphere")
