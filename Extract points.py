@@ -7,11 +7,12 @@ import adsk.cam
 import traceback
 
 
-ui = adsk.core.UserInterface.cast(None)
 handlers = []
 selectedFace = []
 
 # Create a function to extract points on the surface of an object
+
+
 def extract_points_on_surface(selection):
     try:
 
@@ -38,18 +39,18 @@ def extract_points_on_surface(selection):
                 pointsOnFace(axis.asPoint().asArray(), radius=radius)
                 return
 
-            elif selection.geometry.objectType == adsk.core.Sphere.classType():
-                ui.messageBox("Sphere")
-            elif selection.geometry.objectType == adsk.core.Cone.classType():
-                ui.messageBox("Cone")
-            elif selection.geometry.objectType == adsk.core.Torus.classType():
-                ui.messageBox("Torus")
-            elif selection.geometry.objectType == adsk.core.NurbsSurface.classType():
-                ui.messageBox("NurbsSurface")
-            elif selection.geometry.objectType == adsk.core.EllipticalCone.classType():
-                ui.messageBox("EllipticalCone")
-            elif selection.geometry.objectType == adsk.core.EllipticalCylinder.classType():
-                ui.messageBox("EllipticalCylinder")
+            # elif selection.geometry.objectType == adsk.core.Sphere.classType():
+            #     ui.messageBox("Sphere")
+            # elif selection.geometry.objectType == adsk.core.Cone.classType():
+            #     ui.messageBox("Cone")
+            # elif selection.geometry.objectType == adsk.core.Torus.classType():
+            #     ui.messageBox("Torus")
+            # elif selection.geometry.objectType == adsk.core.NurbsSurface.classType():
+            #     ui.messageBox("NurbsSurface")
+            # elif selection.geometry.objectType == adsk.core.EllipticalCone.classType():
+            #     ui.messageBox("EllipticalCone")
+            # elif selection.geometry.objectType == adsk.core.EllipticalCylinder.classType():
+            #     ui.messageBox("EllipticalCylinder")
             else:
                 ui.messageBox("Other")
 
@@ -60,6 +61,8 @@ def extract_points_on_surface(selection):
         ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
 
 # Create an event handler for the "commandCreated" event
+
+
 class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
     def __init__(self):
         super().__init__()
@@ -239,11 +242,13 @@ def drawPoint(sketch, xyz):
 
 
 def run(context):
-    global ui
-    ui = None
+    global ui, app, design, rootComp
+
     try:
         app = adsk.core.Application.get()
         ui = app.userInterface
+        design = adsk.fusion.Design.cast(app.activeProduct)
+        rootComp = design.rootComponent
 
         myCmdDef = ui.commandDefinitions.itemById(
             'DrawPointsOnFace')
