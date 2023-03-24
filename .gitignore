@@ -1,0 +1,4 @@
+.vscode
+.env
+*.manifest
+example.py
