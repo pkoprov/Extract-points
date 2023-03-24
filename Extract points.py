@@ -1,7 +1,10 @@
-#Author-pkoprov@ncsu.edu
-#Description-
+# Author-pkoprov@ncsu.edu
+# Description-
 
-import adsk.core, adsk.fusion, adsk.cam, traceback
+import adsk.core
+import adsk.fusion
+import adsk.cam
+import traceback
 
 
 ui = adsk.core.UserInterface.cast(None)
@@ -43,29 +46,6 @@ def extract_points_on_surface(selection):
             else:
                 ui.messageBox("Other")
 
-            # Get the parameter ranges of the surface
-            
-            # uRange = evaluator.parametricRange()
-            # vRange = evaluator.getParameterExtentsInV()
-
-            # Divide the surface into a grid of points
-            # uCount = 10
-            # vCount = 10
-            # uStep = (uRange[1] - uRange[0]) / uCount
-            # vStep = (vRange[1] - vRange[0]) / vCount
-
-            # # Loop through each point on the grid and get the corresponding point on the surface
-            # points = []
-            # for u in range(uCount):
-            #     for v in range(vCount):
-            #         uParam = uRange[0] + u * uStep
-            #         vParam = vRange[0] + v * vStep
-            #         point = evaluator.getPointAtParameter(uParam, vParam)
-            #         points.append(point)
-
-            # # Return the list of points on the surface
-            # return points
-
         else:
             ui.messageBox('Please select a face.')
 
@@ -77,38 +57,39 @@ class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
     def __init__(self):
         super().__init__()
 
-
     def notify(self, args):
         try:
             eventArgs = adsk.core.CommandCreatedEventArgs.cast(args)
             cmd = eventArgs.command
             cmd.isExecutedWhenPreEmpted = False
             inputs = cmd.commandInputs
-            
-            selectInput = inputs.addSelectionInput('SelectionEventsSample', 'Face', 'Please select a faces')
-            selectInput.addSelectionFilter(adsk.core.SelectionCommandInput.Faces)
+
+            selectInput = inputs.addSelectionInput(
+                'Draw Points On Face', 'Face', 'Please select a faces')
+            selectInput.addSelectionFilter(
+                adsk.core.SelectionCommandInput.Faces)
             selectInput.setSelectionLimits(1)
-            
+
             # Connect to the command related events.
             executePreview = MyCommandExecuteHandler()
             cmd.executePreview.add(executePreview)
-            handlers.append(executePreview) 
+            handlers.append(executePreview)
 
             onExecute = MyCommandExecuteHandler()
             cmd.execute.add(onExecute)
-            handlers.append(onExecute)        
+            handlers.append(onExecute)
 
             onDestroy = MyCommandDestroyHandler()
             cmd.destroy.add(onDestroy)
-            handlers.append(onDestroy)  
+            handlers.append(onDestroy)
 
             onSelect = MySelectHandler()
             cmd.select.add(onSelect)
-            handlers.append(onSelect) 
-            
+            handlers.append(onSelect)
+
             onUnSelect = MyUnSelectHandler()
-            cmd.unselect.add(onUnSelect)            
-            handlers.append(onUnSelect) 
+            cmd.unselect.add(onUnSelect)
+            handlers.append(onUnSelect)
         except:
             if ui:
                 ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
@@ -117,6 +98,7 @@ class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
 class MyCommandDestroyHandler(adsk.core.CommandEventHandler):
     def __init__(self):
         super().__init__()
+
     def notify(self, args):
         try:
             # when the command is done, terminate the script
@@ -130,6 +112,7 @@ class MyCommandDestroyHandler(adsk.core.CommandEventHandler):
 class MySelectHandler(adsk.core.SelectionEventHandler):
     def __init__(self):
         super().__init__()
+
     def notify(self, args):
         try:
             global selectedFace
@@ -141,10 +124,12 @@ class MySelectHandler(adsk.core.SelectionEventHandler):
         except:
             if ui:
                 ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
-                
+
+
 class MyUnSelectHandler(adsk.core.SelectionEventHandler):
     def __init__(self):
         super().__init__()
+
     def notify(self, args):
         try:
             # when the command is done, terminate the script
@@ -173,12 +158,13 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
     def stop(context):
         try:
             app = adsk.core.Application.get()
-            ui  = app.userInterface
-            
+            ui = app.userInterface
+
             # Delete the command definition.
-            cmdDef = ui.commandDefinitions.itemById('SelectionEventsSample_Python')
+            cmdDef = ui.commandDefinitions.itemById(
+                'DrawPointsOnFace')
             if cmdDef:
-                cmdDef.deleteMe()            
+                cmdDef.deleteMe()
         except:
             if ui:
                 ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
@@ -231,24 +217,24 @@ def run(context):
     ui = None
     try:
         app = adsk.core.Application.get()
-        ui  = app.userInterface
+        ui = app.userInterface
 
-        
-        myCmdDef = ui.commandDefinitions.itemById('SelectionEventsSample_Python')
+        myCmdDef = ui.commandDefinitions.itemById(
+            'DrawPointsOnFace')
         if myCmdDef is None:
-            myCmdDef = ui.commandDefinitions.addButtonDefinition('SelectionEventsSample_Python', 'Selection Events Sample', '', '')
-        
+            myCmdDef = ui.commandDefinitions.addButtonDefinition(
+                'DrawPointsOnFace', 'Draw Points On Face', '', '')
+
         # Connect to the command created event.
         onCommandCreated = MyCommandCreatedHandler()
         myCmdDef.commandCreated.add(onCommandCreated)
         handlers.append(onCommandCreated)
-        
+
         # Execute the command.
         myCmdDef.execute()
 
         # prevent this module from being terminate when the script returns, because we are waiting for event handlers to fire
         adsk.autoTerminate(False)
-
 
     except:
         if ui:
